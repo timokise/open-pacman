@@ -8,6 +8,7 @@ const actionBtn = document.getElementById( 'action-btn' );
 
 let game = createGame();
 let frame = 0;
+let debug = false;
 
 const KEY_DIR = {
   ArrowLeft: 'left',
@@ -17,7 +18,13 @@ const KEY_DIR = {
 };
 
 document.addEventListener( 'keydown', ( e ) => {
-  const dir = KEY_DIR[ e.key ];
+  const key = e.key;
+  if ( key === 'd' || key === 'D' ) {
+    debug = !debug;
+    e.preventDefault();
+    return;
+  }
+  const dir = KEY_DIR[ key ];
   if ( !dir ) return;
   e.preventDefault();
   if ( game.state === 'playing' ) game.pacman.nextDir = dir;
@@ -46,7 +53,7 @@ function loop() {
     if ( game.state === 'won' ) showOverlay( 'GANASTE', 'win', 'Reiniciar' );
     else if ( game.state === 'lost' ) showOverlay( 'PERDISTE', 'lose', 'Reiniciar' );
   }
-  draw( ctx, game, frame );
+  draw( ctx, game, frame, debug );
   requestAnimationFrame( loop );
 }
 
