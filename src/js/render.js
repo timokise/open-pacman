@@ -144,9 +144,14 @@ function drawHUD( ctx, game, W ) {
   ctx.fillText( 'VIDAS ' + game.lives, W * TILE - 8, 4 );
 }
 
-const GHOST_COLORS = [ '#ff0000', '#00ffff', '#ffb8ff', '#ffb852' ];
+const GHOST_COLORS = {
+  blinky: '#ff0000',
+  pinky: '#ffb8ff',
+  inky: '#00ffff',
+  clyde: '#ffb852',
+};
 
-function draw( ctx, game, frame ) {
+function draw( ctx, game, frame, debug ) {
   const grid = game.grid;
   const W = grid[ 0 ].length;
   const H = grid.length;
@@ -158,7 +163,44 @@ function draw( ctx, game, frame ) {
   drawDoor( ctx, grid );
   drawDots( ctx, grid );
   drawPacman( ctx, game.pacman, frame );
-  game.ghosts.forEach( ( g, i ) => drawGhost( ctx, g, GHOST_COLORS[ i ] || '#ff0000' ) );
+  game.ghosts.forEach( ( g ) => {
+    const color = GHOST_COLORS[ g.kind ] || '#ff0000';
+    drawGhost( ctx, g, color );
+  } );
+
+  if ( debug ) {
+    game.ghosts.forEach( ( g ) => {
+      const color = GHOST_COLORS[ g.kind ] || '#ff0000';
+      let target = null;
+      if ( typeof window.ghostTarget === 'function' ) {
+        target = window.ghostTarget( game, g );
+      }
+      if ( target ) {
+        const { cx, cy } = cellCenter( g.x, g.y );
+        const { cx: txc, cy: tyc } = cellCenter( target.x, target.y );
+        // Línea del fantasma al objetivo
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo( cx, cy );
+        ctx.lineTo( txc, tyc );
+        ctx.stroke();
+        // Círculo hueco en el objetivo
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc( txc, tyc, 4, 0, Math.PI * 2 );
+        ctx.stroke();
+        // kind
+        ctx.fillStyle = color;
+        ctx.font = '10px "Courier New", monospace';
+        ctx.textBaseline = 'top';
+        ctx.textAlign = 'left';
+        ctx.fillText( g.kind, txc + 6, tyc - 6 );
+      }
+    } );
+  }
+
   drawHUD( ctx, game, W );
 }
 
